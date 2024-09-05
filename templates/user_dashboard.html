@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://kit.fontawesome.com/a076d05399.js"></script> <!-- For FontAwesome Icons -->
+</head>
+<body>
+    <!-- Header Navigation -->
+    <nav class="bg-green-600 p-4 text-white flex justify-between items-center">
+        <div class="flex items-center">
+            <i class="fas fa-leaf text-2xl mr-2"></i>
+            <span class="text-xl font-bold">Drought Prediction</span>
+        </div>
+        <ul class="flex space-x-4">
+            <li><a href="#" class="hover:underline">Data Input</a></li>
+            <li><a href="#" class="hover:underline">Prediction</a></li>
+            <li><a href="#" class="hover:underline">Profile</a></li>
+        </ul>
+        <a href="/logout" class="text-white">Logout</a>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto py-8">
+        <h3 class="text-2xl font-bold mb-4">Welcome, User!</h3>
+        
+        <!-- Data Input Form -->
+        <div class="bg-white shadow-lg p-6 rounded mb-6">
+            <h2 class="text-2xl font-bold mb-4">Weather Data Input</h2>
+            <form id="data-form" class="space-y-4">
+                <div class="flex space-x-4">
+                    <div class="flex-1">
+                        <label class="block text-sm font-medium text-gray-700">Temperature</label>
+                        <input type="number" name="temperature" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required>
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-sm font-medium text-gray-700">Precipitation</label>
+                        <input type="number" name="precipitation" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required>
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-sm font-medium text-gray-700">Soil Moisture</label>
+                        <input type="number" name="soil_moisture" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Date</label>
+                    <input type="date" name="date" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required>
+                </div>
+                <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                    Submit
+                </button>
+            </form>
+        </div>
+    </div>
+    <div class="bg-white shadow-lg p-6 rounded mt-6">
+        <h2 class="text-2xl font-bold mb-4">Drought Prediction</h2>
+        <canvas id="drought-chart"></canvas>
+        <button id="predict-btn" class="mt-4 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+            Predict
+        </button>
+    </div>
+    <!-- Profile Section -->
+<div class="bg-white shadow-lg p-6 rounded mt-6">
+    <h2 class="text-2xl font-bold mb-4">Profile</h2>
+    <form id="profile-form" class="space-y-4">
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Name</label>
+            <input type="text" name="name" id="profile-name" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" value="{{ user.name }}">
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Email</label>
+            <input type="email" name="email" id="profile-email" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" value="{{ user.email }}">
+        </div>
+        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+            Update Profile
+        </button>
+    </form>
+</div>
+
+    <!-- JavaScript for dynamic actions (Optional) -->
+    <script>
+        document.getElementById('predict-btn').addEventListener('click', function() {
+        fetch('/predict', {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            const ctx = document.getElementById('drought-chart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7'], // Example data
+                    datasets: [{
+                        label: 'Drought Level',
+                        data: data.prediction,  // Replace with actual data from server
+                        borderColor: '#4CAF50',
+                        backgroundColor: 'rgba(76, 175, 80, 0.2)',
+                        fill: true
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        })
+        .catch(error => console.error('Error fetching prediction:', error));
+    });
+
+        document.getElementById('data-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+            fetch('/submit_data', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert('Data submitted successfully!');
+            })
+            .catch(error => {
+                console.error('Error submitting data:', error);
+            });
+        });
+        //JavaScript for handling form submission
+    document.getElementById('profile-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const formData = new FormData(this);
+
+        fetch('/update_profile', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Profile updated successfully!');
+                // Optionally, update the form fields with new data
+            } else {
+                alert('Error updating profile.');
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    });
+
+    </script>
+</body>
+</html>

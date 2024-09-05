@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analyst Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <nav class="bg-blue-600 p-4 text-white">
+        <h2 class="text-2xl">Analyst Dashboard</h2>
+        <a href="/logout" class="text-white">Logout</a>
+    </nav>
+    <div class="container mx-auto p-6">
+        <h3>Welcome, Analyst!</h3>
+        <!-- Prediction Graph -->
+        <div class="bg-white shadow-lg p-6 rounded mt-6">
+            <h2 class="text-2xl font-bold mb-4">Drought Prediction</h2>
+            <canvas id="drought-chart"></canvas>
+            <button id="predict-btn" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                Predict
+            </button>
+        </div>
+    </div>
+
+    <!-- JavaScript for dynamic prediction graph -->
+    <script>
+        document.getElementById('predict-btn').addEventListener('click', function() {
+            fetch('/predict', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                const ctx = document.getElementById('drought-chart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7'],
+                        datasets: [{
+                            label: 'Drought Level',
+                            data: data.prediction,
+                            borderColor: '#2196F3',
+                            backgroundColor: 'rgba(33, 150, 243, 0.2)',
+                            fill: true,
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
