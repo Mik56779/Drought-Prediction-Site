@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zambia Province Heatmap</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
+
+    <style>
+        #map {
+            height: 500px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mx-auto p-6">
+        <h2 class="text-2xl font-bold mb-4">Drought Prediction Heatmap</h2>
+        <div id="map"></div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script>
+        var map = L.map('map').setView([-13.1339, 27.8493], 6); // Zambia Coordinates
+
+        // Load the GeoJSON for Zambia provinces
+        fetch('/heatmap_data')
+        .then(response => response.json())
+        .then(data => {
+            L.geoJson(data, {
+                style: function(feature) {
+                    return {
+                        fillColor: getColor(feature.properties.drought_level),
+                        weight: 2,
+                        opacity: 1,
+                        color: 'white',
+                        fillOpacity: 0.7
+                    };
+                },
+                onEachFeature: function(feature, layer) {
+                    layer.bindPopup("Province: " + feature.properties.name + "<br/>Drought Level: " + feature.properties.drought_level);
+                }
+            }).addTo(map);
+        });
+
+        function getColor(d) {
+            return d > 5 ? '#800026' :
+                   d > 4 ? '#BD0026' :
+                   d > 3 ? '#E31A1C' :
+                   d > 2 ? '#FC4E2A' :
+                   d > 1 ? '#FD8D3C' :
+                           '#FEB24C';
+        }
+    </script>
+</body>
+</html>

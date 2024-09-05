@@ -58,9 +58,61 @@
         </ul>
     </div>
 </div>
-
+<!-- Multiple Data Ranges -->
+<div class="bg-white shadow-lg p-6 rounded">
+    <h2 class="text-2xl font-bold mb-4">Drought Prediction Comparison</h2>
+    <form id="compare-form" class="mb-4">
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Select Date Range 1</label>
+                <input type="date" name="date_range_1" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Select Date Range 2</label>
+                <input type="date" name="date_range_2" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+            </div>
+        </div>
+        <button type="submit" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Compare</button>
+    </form>
+    <canvas id="comparison-chart"></canvas>
+</div>
+<!-- Download CSV File -->
+<button id="download-csv" class="mt-4 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Download CSV</button>
+<!-- Bar Chart -->
+<div class="bg-white shadow-lg p-6 rounded">
+    <h2 class="text-2xl font-bold mb-4">Rainfall vs Drought Levels</h2>
+    <canvas id="rainfall-chart"></canvas>
+</div>
     <!-- JavaScript for dynamic prediction graph -->
     <script>
+        // Bar Chart
+        fetch('/rainfall_vs_drought')
+    .then(response => response.json())
+    .then(data => {
+        const ctx = document.getElementById('rainfall-chart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.labels,
+                datasets: [
+                    {
+                        label: 'Rainfall',
+                        data: data.rainfall,
+                        backgroundColor: 'rgba(33, 150, 243, 0.7)',
+                    },
+                    {
+                        label: 'Drought Level',
+                        data: data.drought,
+                        backgroundColor: 'rgba(255, 87, 34, 0.7)',
+                    }
+                ]
+            }
+        });
+    });
+        //Download CSV File
+        document.getElementById('download-csv').addEventListener('click', function() {
+        window.location.href = '/download_csv';
+    });
         // Initialize empty chart for historical data
     const ctx = document.getElementById('historical-data-chart').getContext('2d');
     let historicalChart = new Chart(ctx, {
@@ -135,6 +187,48 @@
                 });
             });
         });
+
+        document.getElementById('compare-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const formData = new FormData(this);
+        fetch('/compare_predictions', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            const ctx = document.getElementById('comparison-chart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.labels,
+                    datasets: [
+                        {
+                            label: 'Prediction Range 1',
+                            data: data.prediction_1,
+                            borderColor: '#4CAF50',
+                            backgroundColor: 'rgba(76, 175, 80, 0.2)',
+                            fill: true,
+                        },
+                        {
+                            label: 'Prediction Range 2',
+                            data: data.prediction_2,
+                            borderColor: '#FFC107',
+                            backgroundColor: 'rgba(255, 193, 7, 0.2)',
+                            fill: true,
+                        }
+                    ]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        });
+    });
     </script>
 </body>
 </html>
