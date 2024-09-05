@@ -23,9 +23,89 @@
             </button>
         </div>
     </div>
+    <!-- Analytics Section -->
+<div class="bg-white shadow-lg p-6 rounded mt-6">
+    <h2 class="text-2xl font-bold mb-4">Analytics</h2>
+
+    <!-- Filters -->
+    <div class="flex space-x-4 mb-6">
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Start Date</label>
+            <input type="date" id="start-date" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700">End Date</label>
+            <input type="date" id="end-date" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+        </div>
+        <button id="filter-btn" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mt-6">
+            Filter Data
+        </button>
+    </div>
+
+    <!-- Chart for Historical Data -->
+    <div class="mb-6">
+        <h3 class="text-xl font-bold mb-2">Historical Weather Data</h3>
+        <canvas id="historical-data-chart"></canvas>
+    </div>
+
+    <!-- Insights Section -->
+    <div>
+        <h3 class="text-xl font-bold mb-2">Advanced Insights</h3>
+        <ul id="insights-list" class="list-disc pl-6 space-y-2">
+            <li>Most Influential Factor: <span id="influential-factor">Temperature</span></li>
+            <li>Average Drought Level: <span id="avg-drought">Moderate</span></li>
+            <!-- More insights can be added here -->
+        </ul>
+    </div>
+</div>
 
     <!-- JavaScript for dynamic prediction graph -->
     <script>
+        // Initialize empty chart for historical data
+    const ctx = document.getElementById('historical-data-chart').getContext('2d');
+    let historicalChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [], // Date labels will be dynamically loaded
+            datasets: [{
+                label: 'Drought Level',
+                data: [],
+                borderColor: '#2196F3',
+                backgroundColor: 'rgba(33, 150, 243, 0.2)',
+                fill: true
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // Fetch data and update the chart
+    function fetchAnalyticsData(startDate, endDate) {
+        fetch(`/analytics_data?start=${startDate}&end=${endDate}`)
+            .then(response => response.json())
+            .then(data => {
+                // Update chart data
+                historicalChart.data.labels = data.dates;
+                historicalChart.data.datasets[0].data = data.drought_levels;
+                historicalChart.update();
+
+                // Update insights
+                document.getElementById('influential-factor').textContent = data.influential_factor;
+                document.getElementById('avg-drought').textContent = data.avg_drought;
+            });
+    }
+
+    // Filter button event listener
+    document.getElementById('filter-btn').addEventListener('click', function() {
+        const startDate = document.getElementById('start-date').value;
+        const endDate = document.getElementById('end-date').value;
+        fetchAnalyticsData(startDate, endDate);
+    });
         document.getElementById('predict-btn').addEventListener('click', function() {
             fetch('/predict', {
                 method: 'POST'

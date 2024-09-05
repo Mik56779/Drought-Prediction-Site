@@ -3,11 +3,37 @@ from flask import Flask, render_template, request, redirect, url_for, session, j
 app = Flask(__name__)
 app.secret_key = "ibiubiniuiyvciwgeug" # Required for session management
 
+# Samplehistorical data (this would typoically come from a database)
+historical_data = {
+  'dates': ['2024-01-01', '2024-01-02', '2024-01-03', '2024-01-04'],
+  'drought_levels': [0.3, 0.5, 0.7, 0.6]
+}
+
+# sample insights
+advanced_insights = {
+  'influetial_factor': 'Temperature',
+  'avg_frought':'Moderate'
+}
+
 #Sample user data (this would normally come from a database)
 user_data = {
   'name': 'John Doe',
   'email': 'john.doe@example.com'
 }
+
+@app.route('/analytics_data')
+def analytics_data():
+    # Simulate filtering historical data based on the date range
+    filtered_data = {
+        'dates': historical_data['dates'],
+        'drought_levels': historical_data['drought_levels'],
+        'influential_factor': advanced_insights.get('influential_factor', 'No data available'),  # Use .get to avoid KeyError
+        'avg_drought': advanced_insights.get('avg_drought', 'No data available')
+    }
+
+    print("Filtered Data:", filtered_data)  # Log the data to ensure it's correct
+
+    return jsonify(filtered_data)
 
 @app.route('/profile')
 def profile():
